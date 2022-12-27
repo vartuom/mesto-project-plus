@@ -24,10 +24,8 @@ const cardSchema = new mongoose.Schema({
     },
   ],
   createdAt: {
-    type: String,
-    required: true,
-    minlength: 2,
-    maxlength: 200,
+    type: Date,
+    default: Date.now(),
   },
 });
 
