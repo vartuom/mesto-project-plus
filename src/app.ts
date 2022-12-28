@@ -1,6 +1,6 @@
-import express, { Response } from 'express';
+import express, { Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
-import { AppRequest } from './utils/utils';
+import {AppError, AppRequest} from './utils/utils';
 import usersRouter from './routes/users';
 import cardsRouter from './routes/cards';
 
@@ -20,6 +20,20 @@ mongoose.connect('mongodb://localhost:27017/mestodb');
 
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
+
+// Централизованная обработка ошибок
+app.use((err: AppError, req: AppRequest, res: Response, next: NextFunction) => {
+  // если у ошибки нет статуса, выставляем 500
+  const { statusCode = 500, message } = err;
+  res
+    .status(statusCode)
+    .send({
+      // проверяем статус и выставляем сообщение в зависимости от него
+      message: statusCode === 500
+        ? 'На сервере произошла ошибка'
+        : message,
+    });
+});
 
 app.listen(PORT, () => {
   // Если всё работает, консоль покажет, какой порт приложение слушает
