@@ -1,8 +1,9 @@
 import express, { Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
-import {AppError, AppRequest} from './utils/utils';
+import { AppError, AppRequest } from './utils/utils';
 import usersRouter from './routes/users';
 import cardsRouter from './routes/cards';
+import { DEFAULT_ERROR } from './utils/errorsConstants';
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -22,20 +23,21 @@ app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 
 // Централизованная обработка ошибок
+// eslint-disable-next-line no-unused-vars
 app.use((err: AppError, req: AppRequest, res: Response, next: NextFunction) => {
   // если у ошибки нет статуса, выставляем 500
-  const { statusCode = 500, message } = err;
+  const { statusCode = DEFAULT_ERROR, message } = err;
   res
     .status(statusCode)
     .send({
       // проверяем статус и выставляем сообщение в зависимости от него
-      message: statusCode === 500
+      message: statusCode === DEFAULT_ERROR
         ? 'На сервере произошла ошибка'
         : message,
     });
 });
 
 app.listen(PORT, () => {
-  // Если всё работает, консоль покажет, какой порт приложение слушает
+  // eslint-disable-next-line no-console
   console.log(`App listening on port ${PORT}`);
 });

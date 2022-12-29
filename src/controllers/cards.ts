@@ -54,6 +54,7 @@ export const likeCard = async (req: AppRequest, res: Response, next: NextFunctio
   const { cardId } = req.params;
   const userId = req.user?._id;
   try {
+    // eslint-disable-next-line max-len
     const card = await Card.findByIdAndUpdate(cardId, { $addToSet: { likes: userId } }, { new: true, runValidators: true });
     if (!card) next(new NotFoundError('Передан несуществующий _id карточки.'));
     res.send({ data: card });
@@ -77,6 +78,7 @@ export const dislikeCard = async (req: AppRequest, res: Response, next: NextFunc
   const { cardId } = req.params;
   const userId = req.user?._id;
   try {
+    // eslint-disable-next-line max-len
     const card = await Card.findByIdAndUpdate(cardId, { $pull: { likes: userId } }, { new: true, runValidators: true });
     if (!card) next(new NotFoundError('Передан несуществующий _id карточки.'));
     res.send({ data: card });
