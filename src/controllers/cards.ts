@@ -19,7 +19,7 @@ export const createCard = async (req: AppRequest, res: Response, next: NextFunct
     if (err instanceof Error) {
       switch (err.name) {
         case 'ValidationError':
-          next(new ValidationError('Ошибка валидации переданных данных.'));
+          next(new ValidationError('Переданы некорректные данные при создании карточки.'));
           break;
         default:
           next(err);
@@ -32,16 +32,16 @@ export const deleteCardById = async (req: AppRequest, res: Response, next: NextF
   const { cardId } = req.params;
   const ownerId = req.user?._id;
   try {
-    const cardToDelete = await Card.findById(cardId);
-    if (!cardToDelete) next(new NotFoundError('Карточка не найдена'));
+    let cardToDelete = await Card.findById(cardId);
+    if (!cardToDelete) next(new NotFoundError('Передан несуществующий _id карточки.'));
     if (cardToDelete?.owner.toString() !== ownerId) next(new ForbiddenError('Отказано в доступе. Чужая карточка'));
-    await Card.findByIdAndRemove(cardId);
+    cardToDelete = await Card.findByIdAndRemove(cardId);
     res.send({ data: cardToDelete });
   } catch (err) {
     if (err instanceof Error) {
       switch (err.name) {
         case 'CastError':
-          next(new NotFoundError('Карточка не найдена'));
+          next(new NotFoundError('Передан некорректный _id карточки.'));
           break;
         default:
           next(err);
@@ -54,14 +54,17 @@ export const likeCard = async (req: AppRequest, res: Response, next: NextFunctio
   const { cardId } = req.params;
   const userId = req.user?._id;
   try {
-    const card = await Card.findByIdAndUpdate(cardId, { $addToSet: { likes: userId } }, { new: true });
-    if (!card) next(new NotFoundError('Карточка не найдена'));
+    const card = await Card.findByIdAndUpdate(cardId, { $addToSet: { likes: userId } }, { new: true, runValidators: true });
+    if (!card) next(new NotFoundError('Передан несуществующий _id карточки.'));
     res.send({ data: card });
   } catch (err) {
     if (err instanceof Error) {
       switch (err.name) {
         case 'CastError':
-          next(new NotFoundError('Карточка не найдена'));
+          next(new NotFoundError('Передан некорректный _id карточки.'));
+          break;
+        case 'ValidationError':
+          next(new ValidationError('Переданы некорректные данные для постановки лайка.'));
           break;
         default:
           next(err);
@@ -74,14 +77,17 @@ export const dislikeCard = async (req: AppRequest, res: Response, next: NextFunc
   const { cardId } = req.params;
   const userId = req.user?._id;
   try {
-    const card = await Card.findByIdAndUpdate(cardId, { $pull: { likes: userId } }, { new: true });
-    if (!card) next(new NotFoundError('Карточка не найдена'));
+    const card = await Card.findByIdAndUpdate(cardId, { $pull: { likes: userId } }, { new: true, runValidators: true });
+    if (!card) next(new NotFoundError('Передан несуществующий _id карточки.'));
     res.send({ data: card });
   } catch (err) {
     if (err instanceof Error) {
       switch (err.name) {
         case 'CastError':
-          next(new NotFoundError('Карточка не найдена'));
+          next(new NotFoundError('Передан некорректный _id карточки.'));
+          break;
+        case 'ValidationError':
+          next(new ValidationError('Переданы некорректные данные для снятия лайка.'));
           break;
         default:
           next(err);

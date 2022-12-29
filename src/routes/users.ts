@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import {
   createUser, getUsers, getUsersById, updateUser, updateAvatar,
-} from '../controllers/user';
+} from '../controllers/users';
 
 const router = Router();
 router.get('/', getUsers);
