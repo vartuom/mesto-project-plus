@@ -32,8 +32,10 @@ export const deleteCardById = async (req: AppRequest, res: Response, next: NextF
   const { cardId } = req.params;
   const ownerId = req.user?._id;
   try {
+    // перед удалением карточки сначала проверяем права доступа
     let cardToDelete = await Card.findById(cardId);
     if (!cardToDelete) next(new NotFoundError('Передан несуществующий _id карточки.'));
+    // если запрос приходит не от автора карточки, выкидваем ошибку ForbiddenError
     if (cardToDelete?.owner.toString() !== ownerId) next(new ForbiddenError('Отказано в доступе. Чужая карточка'));
     cardToDelete = await Card.findByIdAndRemove(cardId);
     res.send({ data: cardToDelete });
