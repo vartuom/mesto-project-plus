@@ -1,37 +1,48 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import User from '../models/user';
 import { AppRequest } from '../utils/utils';
+import NotFoundError from "../utils/appErrorsClasses/notFoundError";
+import ValidationError from "../utils/appErrorsClasses/validationError";
 
-export const getUsers = (req: Request, res: Response) => User.find({})
+export const getUsers = (req: Request, res: Response, next: NextFunction) => User.find({})
   .then((users) => res.send({ data: users }))
-  .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+  .catch(next);
 
-export const getUsersById = async (req: Request, res: Response) => {
+export const getUsersById = async (req: Request, res: Response, next: NextFunction) => {
   const { userId } = req.params;
   try {
     const user = await User.findById(userId);
-    if (!user) {
-
-    } throw new Error('Запрашиваемый пользователь не найден');
+    if (!user) next(new NotFoundError('Запрашиваемый пользователь не найден'));
     res.send({ data: user });
   } catch (err) {
     if (err instanceof Error) {
       switch (err.name) {
         case 'CastError':
-          res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
+          next(new NotFoundError('Запрашиваемый пользователь не найден'));
           break;
         default:
-          res.status(500).send({ message: err.message ? err.message : 'Произошла ошибка' });
+          next(err);
       }
     }
   }
 };
 
-export const createUser = (req: Request, res: Response) => {
+export const createUser = async (req: Request, res: Response, next: NextFunction) => {
   const { name, avatar, about } = req.body;
-  return User.create({ name, avatar, about })
-    .then((user) => res.send({ data: user }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+  try {
+    const user = await User.create({ name, avatar, about });
+    res.send({ data: user });
+  } catch (err) {
+    if (err instanceof Error) {
+      switch (err.name) {
+        case 'ValidationError':
+          next(new ValidationError('Ошибка валидации переданных данных.'));
+          break;
+        default:
+          next(err);
+      }
+    }
+  }
 };
 
 export const updateUser = async (req: AppRequest, res: Response) => {

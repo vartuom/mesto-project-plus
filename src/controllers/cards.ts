@@ -3,17 +3,29 @@ import { AppRequest } from '../utils/utils';
 import Card from '../models/card';
 import NotFoundError from '../utils/appErrorsClasses/notFoundError';
 import ForbiddenError from '../utils/appErrorsClasses/forbiddenError';
+import ValidationError from '../utils/appErrorsClasses/validationError';
 
-export const getCards = (req: Request, res: Response) => Card.find({})
+export const getCards = (req: Request, res: Response, next: NextFunction) => Card.find({})
   .then((users) => res.send({ data: users }))
-  .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+  .catch(next);
 
-export const createCard = (req: AppRequest, res: Response) => {
+export const createCard = async (req: AppRequest, res: Response, next: NextFunction) => {
   const { name, link } = req.body;
   const owner = req.user!._id;
-  return Card.create({ name, link, owner })
-    .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+  try {
+    const card = await Card.create({ name, link, owner });
+    res.send({ data: card });
+  } catch (err) {
+    if (err instanceof Error) {
+      switch (err.name) {
+        case 'ValidationError':
+          next(new ValidationError('Ошибка валидации переданных данных.'));
+          break;
+        default:
+          next(err);
+      }
+    }
+  }
 };
 
 export const deleteCardById = async (req: AppRequest, res: Response, next: NextFunction) => {
