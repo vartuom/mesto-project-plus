@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { urlRegex } from '../utils/utils';
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -10,6 +11,10 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String,
     required: true,
+    validate: {
+      validator: (url: string) => urlRegex.test(url),
+      message: 'Передана некорректная ссылка.',
+    },
   },
   about: {
     type: String,
