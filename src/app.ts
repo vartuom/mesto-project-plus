@@ -4,6 +4,7 @@ import { AppError, AppRequest } from './utils/utils';
 import usersRouter from './routes/users';
 import cardsRouter from './routes/cards';
 import { DEFAULT_ERROR } from './utils/errorsConstants';
+import e from "express";
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -25,6 +26,7 @@ app.use('/cards', cardsRouter);
 // Централизованная обработка ошибок
 // eslint-disable-next-line no-unused-vars
 app.use((err: AppError, req: AppRequest, res: Response, next: NextFunction) => {
+  console.log(err);
   // если у ошибки нет статуса, выставляем 500
   const { statusCode = DEFAULT_ERROR, message } = err;
   res

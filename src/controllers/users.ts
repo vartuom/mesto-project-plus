@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt';
 import { Request, Response, NextFunction } from 'express';
 import User from '../models/user';
 import { AppRequest } from '../utils/utils';
@@ -28,9 +29,22 @@ export const getUsersById = async (req: Request, res: Response, next: NextFuncti
 };
 
 export const createUser = async (req: Request, res: Response, next: NextFunction) => {
-  const { name, avatar, about } = req.body;
+  const {
+    name,
+    avatar,
+    about,
+    email,
+    password,
+  } = req.body;
   try {
-    const user = await User.create({ name, avatar, about });
+    const hash = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name,
+      avatar,
+      about,
+      email,
+      password: hash,
+    });
     res.send({ data: user });
   } catch (err) {
     if (err instanceof Error) {
@@ -39,6 +53,7 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
           next(new ValidationError('Переданы некорректные данные при создании пользователя.'));
           break;
         default:
+          if (err.message.includes('duplicate key error')) next(new ValidationError('Пользователь с переданным email уже существует.'));
           next(err);
       }
     }
