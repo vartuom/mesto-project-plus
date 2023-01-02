@@ -5,6 +5,7 @@ import User from '../models/user';
 import { IAppRequest } from '../utils/utils';
 import NotFoundError from '../utils/appErrorsClasses/notFoundError';
 import ValidationError from '../utils/appErrorsClasses/validationError';
+import ConflictError from '../utils/appErrorsClasses/conflictError';
 
 export const getUsers = (req: Request, res: Response, next: NextFunction) => User.find({})
   .then((users) => res.send({ data: users }))
@@ -54,7 +55,7 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
           next(new ValidationError('Переданы некорректные данные при создании пользователя.'));
           break;
         default:
-          if (err.message.includes('duplicate key error')) next(new ValidationError('Пользователь с переданным email уже существует.'));
+          if (err.message.includes('duplicate key error')) next(new ConflictError('Пользователь с переданным email уже существует.'));
           next(err);
       }
     }

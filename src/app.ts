@@ -6,12 +6,17 @@ import cardsRouter from './routes/cards';
 import { DEFAULT_ERROR } from './utils/errorsConstants';
 import { createUser, login } from './controllers/users';
 import auth from './middlewares/auth';
+import { requestLogger, errorLogger } from './middlewares/logger';
+
 
 const { PORT = 3000 } = process.env;
 const app = express();
 app.use(express.json());
 
 mongoose.connect('mongodb://localhost:27017/mestodb');
+
+app.use(requestLogger); // подключаем логер запросов
+
 app.post('/signup', createUser);
 app.post('/signin', login);
 
@@ -19,6 +24,8 @@ app.use(auth);
 
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
+
+app.use(errorLogger);
 
 // Централизованная обработка ошибок
 // eslint-disable-next-line no-unused-vars
