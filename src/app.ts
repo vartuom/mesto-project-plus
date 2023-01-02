@@ -5,6 +5,7 @@ import usersRouter from './routes/users';
 import cardsRouter from './routes/cards';
 import { DEFAULT_ERROR } from './utils/errorsConstants';
 import e from "express";
+import {createUser, login} from "./controllers/users";
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -19,7 +20,8 @@ app.use((req: AppRequest, res: Response, next) => {
 });
 
 mongoose.connect('mongodb://localhost:27017/mestodb');
-
+app.post('/signup', createUser);
+app.post('/signin', login);
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 

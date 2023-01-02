@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import User from '../models/user';
 import { AppRequest } from '../utils/utils';
@@ -104,5 +105,20 @@ export const updateAvatar = async (req: AppRequest, res: Response, next: NextFun
           next(err);
       }
     }
+  }
+};
+
+export const login = async (req: AppRequest, res: Response, next: NextFunction) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findUserByCredentials(email, password);
+    const token = jwt.sign(
+      { _id: user._id },
+      'some-secret-key',
+      { expiresIn: '7d' },
+    );
+    return res.cookie('token', token, { httpOnly: true, sameSite: true }).end();
+  } catch (err) {
+    next(err);
   }
 };
