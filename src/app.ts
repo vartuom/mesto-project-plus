@@ -1,6 +1,7 @@
 import express, { Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
-import { AppError, IAppRequest } from './utils/utils';
+import { celebrate } from 'celebrate';
+import {AppError, createUserValParams, IAppRequest, loginValParams} from './utils/utils';
 import usersRouter from './routes/users';
 import cardsRouter from './routes/cards';
 import { DEFAULT_ERROR } from './utils/errorsConstants';
@@ -17,8 +18,8 @@ mongoose.connect('mongodb://localhost:27017/mestodb');
 
 app.use(requestLogger); // подключаем логер запросов
 
-app.post('/signup', createUser);
-app.post('/signin', login);
+app.post('/signup', celebrate({ params: createUserValParams }), createUser);
+app.post('/signin', celebrate({ params: loginValParams }), login);
 
 app.use(auth);
 
