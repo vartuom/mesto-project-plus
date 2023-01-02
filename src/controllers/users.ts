@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import User from '../models/user';
-import { AppRequest } from '../utils/utils';
+import { IAppRequest } from '../utils/utils';
 import NotFoundError from '../utils/appErrorsClasses/notFoundError';
 import ValidationError from '../utils/appErrorsClasses/validationError';
 
@@ -61,7 +61,7 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const updateUser = async (req: AppRequest, res: Response, next: NextFunction) => {
+export const updateUser = async (req: IAppRequest, res: Response, next: NextFunction) => {
   const { name, about } = req.body;
   const id = req.user!._id;
   try {
@@ -85,7 +85,7 @@ export const updateUser = async (req: AppRequest, res: Response, next: NextFunct
   }
 };
 
-export const updateAvatar = async (req: AppRequest, res: Response, next: NextFunction) => {
+export const updateAvatar = async (req: IAppRequest, res: Response, next: NextFunction) => {
   const { avatar } = req.body;
   const id = req.user!._id;
   try {
@@ -108,7 +108,7 @@ export const updateAvatar = async (req: AppRequest, res: Response, next: NextFun
   }
 };
 
-export const login = async (req: AppRequest, res: Response, next: NextFunction) => {
+export const login = async (req: IAppRequest, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
   try {
     const user = await User.findUserByCredentials(email, password);
@@ -117,8 +117,28 @@ export const login = async (req: AppRequest, res: Response, next: NextFunction) 
       'some-secret-key',
       { expiresIn: '7d' },
     );
+    // метод .cookie не отпраляет ответ автоматически, поэтому заканчиваем цепочку методом .end
     return res.cookie('token', token, { httpOnly: true, sameSite: true }).end();
   } catch (err) {
     next(err);
+  }
+};
+
+export const getUserInfo = async (req: IAppRequest, res: Response, next: NextFunction) => {
+  const id = req.user?._id;
+  try {
+    const user = await User.findById(id);
+    if (!user) next(new NotFoundError('Пользователь по указанному _id не найден.'));
+    res.send({ data: user });
+  } catch (err) {
+    if (err instanceof Error) {
+      switch (err.name) {
+        case 'CastError':
+          next(new NotFoundError('Передан некорректный _id пользователя.'));
+          break;
+        default:
+          next(err);
+      }
+    }
   }
 };

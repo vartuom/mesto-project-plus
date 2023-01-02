@@ -1,6 +1,6 @@
 import { Request } from 'express';
 
-export interface AppRequest extends Request {
+export interface IAppRequest extends Request {
   user?: {_id: String}
 }
 
