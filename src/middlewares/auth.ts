@@ -19,7 +19,7 @@ export default (req: IAuthRequest, res: Response, next: NextFunction) => {
     payload = jwt.verify(token, 'some-secret-key');
   } catch (err) {
     // отправим ошибку, если не получилось
-    next(new AuthenticationError('Необходима авторизация'));
+    next(new AuthenticationError('Необходима авторизация.'));
   }
   req.user = payload; // записываем пейлоуд в объект запроса
   next(); // пропускаем запрос дальше

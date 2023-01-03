@@ -47,7 +47,15 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
       email,
       password: hash,
     });
-    res.send({ data: user });
+    res.send({
+      data:
+        {
+          name: user.name,
+          avatar: user.avatar,
+          about: user.about,
+          email: user.email,
+        },
+    });
   } catch (err) {
     if (err instanceof Error) {
       switch (err.name) {
@@ -109,6 +117,7 @@ export const updateAvatar = async (req: IAppRequest, res: Response, next: NextFu
   }
 };
 
+// eslint-disable-next-line consistent-return
 export const login = async (req: IAppRequest, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
   try {

@@ -36,7 +36,7 @@ export const deleteCardById = async (req: IAppRequest, res: Response, next: Next
     let cardToDelete = await Card.findById(cardId);
     if (!cardToDelete) next(new NotFoundError('Передан несуществующий _id карточки.'));
     // если запрос приходит не от автора карточки, выкидваем ошибку ForbiddenError
-    if (cardToDelete?.owner.toString() !== ownerId) next(new ForbiddenError('Отказано в доступе. Чужая карточка'));
+    if (cardToDelete?.owner.toString() !== ownerId) next(new ForbiddenError('Отказано в доступе. Чужая карточка.'));
     cardToDelete = await Card.findByIdAndRemove(cardId);
     res.send({ data: cardToDelete });
   } catch (err) {
