@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { AppRequest } from '../utils/utils';
+import { IAppRequest } from '../utils/utils';
 import Card from '../models/card';
 import NotFoundError from '../utils/appErrorsClasses/notFoundError';
 import ForbiddenError from '../utils/appErrorsClasses/forbiddenError';
@@ -9,7 +9,7 @@ export const getCards = (req: Request, res: Response, next: NextFunction) => Car
   .then((users) => res.send({ data: users }))
   .catch(next);
 
-export const createCard = async (req: AppRequest, res: Response, next: NextFunction) => {
+export const createCard = async (req: IAppRequest, res: Response, next: NextFunction) => {
   const { name, link } = req.body;
   const owner = req.user!._id;
   try {
@@ -28,7 +28,7 @@ export const createCard = async (req: AppRequest, res: Response, next: NextFunct
   }
 };
 
-export const deleteCardById = async (req: AppRequest, res: Response, next: NextFunction) => {
+export const deleteCardById = async (req: IAppRequest, res: Response, next: NextFunction) => {
   const { cardId } = req.params;
   const ownerId = req.user?._id;
   try {
@@ -36,7 +36,7 @@ export const deleteCardById = async (req: AppRequest, res: Response, next: NextF
     let cardToDelete = await Card.findById(cardId);
     if (!cardToDelete) next(new NotFoundError('Передан несуществующий _id карточки.'));
     // если запрос приходит не от автора карточки, выкидваем ошибку ForbiddenError
-    if (cardToDelete?.owner.toString() !== ownerId) next(new ForbiddenError('Отказано в доступе. Чужая карточка'));
+    if (cardToDelete?.owner.toString() !== ownerId) next(new ForbiddenError('Отказано в доступе. Чужая карточка.'));
     cardToDelete = await Card.findByIdAndRemove(cardId);
     res.send({ data: cardToDelete });
   } catch (err) {
@@ -52,7 +52,7 @@ export const deleteCardById = async (req: AppRequest, res: Response, next: NextF
   }
 };
 
-export const likeCard = async (req: AppRequest, res: Response, next: NextFunction) => {
+export const likeCard = async (req: IAppRequest, res: Response, next: NextFunction) => {
   const { cardId } = req.params;
   const userId = req.user?._id;
   try {
@@ -76,7 +76,7 @@ export const likeCard = async (req: AppRequest, res: Response, next: NextFunctio
   }
 };
 
-export const dislikeCard = async (req: AppRequest, res: Response, next: NextFunction) => {
+export const dislikeCard = async (req: IAppRequest, res: Response, next: NextFunction) => {
   const { cardId } = req.params;
   const userId = req.user?._id;
   try {
